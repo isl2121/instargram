@@ -1,0 +1,9 @@
+{
+  "django" : {
+    "allowed_hosts" : [
+      "localhost",
+      "0.0.0.0",
+      "127.0.0.1"
+    ]
+  }
+}
