@@ -23,7 +23,7 @@ settings_hosts = os.path.join(config_file_dir, "settings_hosts.json")
 settings_secret_common = json.loads(open(settings_common).read())
 settings_hosts_common = json.loads(open(settings_hosts).read())
 
-# Quick-start development settings - unsuitable for production
+# Quick-start development settings - unsuitable for production®
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app.apps.AppConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
