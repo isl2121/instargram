@@ -1,13 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+from django.utils import timezone
+from django.conf import settings
+from imagekit.models import ProcessedImageField
+from imagekit.processors import Thumbnail
+
 
 
 # Create your models here.
 
 class App (models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    image = models.ImageField()
+    image = ProcessedImageField(processors=[Thumbnail(600, 600)],
+                                format='JPEG',
+                                options={'quality': 90})
     content = models.CharField(max_length=500)
     likes = models.ManyToManyField(User, related_name="likes", blank=True)
     created_time = models.DateTimeField(default=now)
@@ -24,3 +32,13 @@ class App (models.Model):
 
     def like_count(self):
         return self.likes.count()
+
+class Comments (models.Model):
+    app = models.ForeignKey(App, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    reply = models.CharField(max_length=100)
+    created_time = models.DateTimeField(default=now)
+    update_time = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.reply
