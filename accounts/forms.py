@@ -14,20 +14,20 @@ class SignupForm(UserCreationForm):
     )
 
     name = forms.CharField(max_length=50)
-    bio = forms.CharField(widget=forms.Textarea())
+    about = forms.CharField(widget=forms.Textarea())
     sex = forms.ChoiceField(choices = sex_type)
     birth_date = forms.DateField(help_text='Required. Format: YYYY-MM-DD')
 
     class Meta:
         model = User
-        fields = ['username', 'password1', 'password2', 'name', 'bio', 'sex', 'birth_date']
+        fields = ['username', 'password1', 'password2', 'name', 'about', 'sex', 'birth_date']
 
     def save(self, commit=True):
         print('asdfasdf')
         user = super(SignupForm, self).save(commit=False)
         user.save()
 
-        user.profile.bio = self.cleaned_data['bio']
+        user.profile.about = self.cleaned_data['about']
         user.profile.birth_date = self.cleaned_data['birth_date']
         user.profile.sex = self.cleaned_data['sex']
         user.profile.name = self.cleaned_data['name']

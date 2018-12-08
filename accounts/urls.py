@@ -7,5 +7,6 @@ urlpatterns = [
     path('login', views.login, name="login"),
     path('logout', views.logout, name="logout"),
     path('register', views.SignupUserView.as_view(), name="signup"),
-    path('signup_done', views.RegisteredView.as_view(), name='signup_done')
+    path('signup_done', views.RegisteredView.as_view(), name='signup_done'),
+    path('set/follow/', views.set_follow, name="set_follow"),
 ]

@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import HttpResponseRedirect
 from .forms import LoginForm, SignupForm
 from django.contrib import messages
-
+from .models import Profile, Relation
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 
@@ -10,6 +10,9 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import authenticate
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+import json
 # Create your views here.
 
 def login(request):
@@ -52,6 +55,30 @@ class SignupUserView(CreateView):
 
 class RegisteredView(TemplateView):
     template_name = 'registration/signup_done.html'
+
+
+@login_required
+@require_POST
+def set_follow(request):
+    from_user = request.user.profile
+    pk = request.POST.get('pk')
+
+    to_user = get_object_or_404(Profile, pk=pk)
+
+    relation, result = Relation.objects.get_or_create(from_user=from_user, to_user=to_user)
+    return_data = {}
+
+    if result:
+        return_data['result'] = 1
+        return_data['msg'] = '팔로우 설정'
+    else:
+        relation.delete()
+        return_data['result'] = 0
+        return_data['msg'] = '팔로우 설정이 취소되었습니다.'
+
+    return HttpResponse(json.dumps(return_data), content_type="application/json")
+
+
 
 '''
 @transaction.atomic

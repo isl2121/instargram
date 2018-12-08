@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from .models import App, Comments
+from .models import App, Comment, Tag
 from .forms import CommentForm
 import json
 
@@ -21,8 +21,13 @@ def main(request):
 
 class MainLv(ListView):
     model = App
-    queryset = App.objects.all().prefetch_related('comments_set')
+    queryset = App.objects.all().prefetch_related('comment_set','author__profile__follower_user').select_related('author__profile')
     context_object_name = 'app_list'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = App.objects.all().prefetch_related('comment_set', 'tag_setting','author__profile__follower_user').select_related('author__profile')
+        return queryset
 
     def get_context_data(self):
         context = super().get_context_data()
@@ -64,11 +69,16 @@ def comment_new(request):
 
     return HttpResponse(json.dumps(return_data), content_type="application/json")
 
+
+def get_tag(request):
+    pass
+
+
 @login_required
 @require_POST
 def comment_del(request):
     pk = request.POST.get('pk')
-    reply = get_object_or_404(Comments, pk=pk)
+    reply = get_object_or_404(Comment, pk=pk)
     return_data = {}
 
     if request.user == reply.user:
@@ -87,10 +97,9 @@ def like_chage(request):
 
     app = get_object_or_404(App, pk=pk)
 
-    like_info = App.objects.filter(likes=user).exists()
     return_data = {}
 
-    if like_info:
+    if user in app.likes.all():
         app.likes.remove(user)
         return_data['msg'] = '좋아요 가 취소 되었습니다.'
         return_data['result'] = 0
