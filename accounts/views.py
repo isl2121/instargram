@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import HttpResponseRedirect
-from .forms import LoginForm, SignupForm
+from .forms import LoginForm, SignupForm, UpdateForm
 from django.contrib import messages
 from .models import Profile, Relation
+from app.models import App
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
-
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import authenticate
@@ -61,11 +63,12 @@ class RegisteredView(TemplateView):
 @require_POST
 def set_follow(request):
     from_user = request.user.profile
-    pk = request.POST.get('pk')
+    pk = request.POST.get('user')
 
-    to_user = get_object_or_404(Profile, pk=pk)
+    to_user = get_object_or_404(App, user__username= pk)
 
-    relation, result = Relation.objects.get_or_create(from_user=from_user, to_user=to_user)
+    relation, result = Relation.objects.get_or_create(from_user=from_user, to_user=to_user.user.profile)
+
     return_data = {}
 
     if result:
@@ -79,6 +82,45 @@ def set_follow(request):
     return HttpResponse(json.dumps(return_data), content_type="application/json")
 
 
+
+def Update_profile(request):
+    pk = request.user.pk
+    obj = get_object_or_404(Profile, pk=pk)
+
+    if request.method == "POST":
+        form = UpdateForm(request.POST, instance=obj)
+        if form.is_valid():
+            obj.about = form.cleaned_data['about']
+            obj.name = form.cleaned_data['name']
+            obj.sex = form.cleaned_data['sex']
+            obj.birth_date = form.cleaned_data['birth_date']
+            obj.save()
+            messages.info(request,'저장되었습니다.')
+        else:
+            messages.error(request,'저장중 문제가 발생하였습니다.')
+
+        return HttpResponseRedirect('/user/update_profile')
+
+    else:
+        form = UpdateForm(instance=obj)
+
+    return render(request, 'registration/update_profile.html',{'form':form})
+
+
+def Update_passwd(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user=user)
+            messages.success(request,'패스워드가 변경되었습니다.')
+            return HttpResponseRedirect('/user/update_profile')
+        else:
+            messages.error(request,'패스워드 변경중 실패하였습니다.')
+            return HttpResponseRedirect('/user/update_password')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'registration/update_passwd.html', {'form':form})
 
 '''
 @transaction.atomic

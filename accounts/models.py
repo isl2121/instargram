@@ -24,23 +24,16 @@ class Profile(models.Model):
         verbose_name = 'profile'
         verbose_name_plural = 'profiles'
 
-
     def __str__(self):
         return self.user.username
 
     @property
     def get_follower(self):
-        user = []
-        for i in self.follower_user:
-            user.append(i)
-        return user
+        return [i.from_user for i in self.follower_user.all()]
 
     @property
     def get_following(self):
-        user = []
-        for i in self.follow_user:
-            user.append(i)
-        return user
+        return [i.to_user for i in self.follow_user.all()]
 
     @property
     def get_follower_count(self):

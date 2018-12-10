@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
+from django.contrib.auth import get_user_model
 from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from .models import App, Comment, Tag
@@ -21,16 +22,15 @@ def main(request):
 
 class MainLv(ListView):
     model = App
-    queryset = App.objects.all().prefetch_related('comment_set','author__profile__follower_user').select_related('author__profile')
     context_object_name = 'app_list'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = App.objects.all().prefetch_related('comment_set', 'tag_setting','author__profile__follower_user').select_related('author__profile')
+        queryset = App.objects.all().prefetch_related('comment_set', 'tag_setting', 'user__profile__follower_user').select_related('user__profile')
         return queryset
 
     def get_context_data(self):
         context = super().get_context_data()
+
         return context
 
 class MakeApp(CreateView):
@@ -46,6 +46,27 @@ class MakeApp(CreateView):
         object.save()
 
         return super().form_valid(form)
+
+
+class Modifyapp(UpdateView):
+    model = App
+    fields = ['title', 'image', 'content']
+    template_name = 'app/app_make.html'
+    success_url = reverse_lazy('app:index')
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs['pk']
+        user = self.request.user
+        return get_object_or_404(App, pk=pk, user=user)
+
+class Deleteapp(DeleteView):
+    model = App
+    success_url = reverse_lazy('app:index')
+    template_name = "app/app_delete.html"
+    def get_object(self, queryset=None):
+        pk = self.kwargs['pk']
+        user = self.request.user
+        return get_object_or_404(App, pk=pk,user=user)
 
 @login_required
 @require_POST
@@ -112,3 +133,15 @@ def like_chage(request):
     return_data['user'] = request.user.get_username()
 
     return HttpResponse(json.dumps(return_data), content_type="application/json")
+
+def get_list(request, username):
+    user = get_object_or_404(get_user_model(), username=username)
+    user_profile = user.profile
+    user_app = user.app_set.all()
+
+    data = {}
+    data['user_info'] = user
+    data['user_profile'] = user_profile
+    data['apps'] = user_app
+
+    return render(request, 'app/user_list.html', data)

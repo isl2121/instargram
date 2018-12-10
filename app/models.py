@@ -48,6 +48,7 @@ class App (models.Model):
     def like_count(self):
         return self.likes.count()
 
+
 class Comment (models.Model):
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
