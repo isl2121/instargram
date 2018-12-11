@@ -7,9 +7,7 @@ from imagekit.models import ProcessedImageField
 from imagekit.processors import Thumbnail
 import re
 
-
 # Create your models here.
-
 class App (models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)

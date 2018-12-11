@@ -3,10 +3,20 @@ from django.conf import settings
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFill
 
 from django.utils.timezone import now
 
 # Create your models here.
+
+def user_path(instance, filename):
+    from random import choice
+    import string
+    arr = [choice(string.ascii_letters) for _ in range(8)]
+    pid = ''.join(arr)
+    extension = filename.split('.')[-1]
+    return 'profil_img/{}/{}.{}'.format(instance.user.username, pid, extension)
 
 class Profile(models.Model):
     Sex_type = (
@@ -14,6 +24,13 @@ class Profile(models.Model):
         ('w', '여자')
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    profil_img = ProcessedImageField(
+        upload_to=user_path,
+        processors=[ResizeToFill(150, 150)],
+        format='JPEG',
+        options={'quality':60},
+        blank='True'
+    )
     name = models.CharField(max_length=50)
     about = models.TextField(max_length=500, blank=True)
     sex = models.CharField(choices=Sex_type, default='m', max_length=1)
@@ -42,7 +59,6 @@ class Profile(models.Model):
     @property
     def get_following_count(self):
         return len(self.get_following)
-
 
 
 @receiver(post_save, sender=User)

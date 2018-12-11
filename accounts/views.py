@@ -15,7 +15,6 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 import json
-# Create your views here.
 
 def login(request):
 
@@ -58,14 +57,16 @@ class SignupUserView(CreateView):
 class RegisteredView(TemplateView):
     template_name = 'registration/signup_done.html'
 
-
 @login_required
 @require_POST
 def set_follow(request):
+    print("-*" * 10)
+    print(request.POST.get('user'))
     from_user = request.user.profile
-    pk = request.POST.get('user')
+    user = request.POST.get('user')
+    print("-*-" * 10)
 
-    to_user = get_object_or_404(App, user__username= pk)
+    to_user = get_object_or_404(Profile, user__username=user)
 
     relation, result = Relation.objects.get_or_create(from_user=from_user, to_user=to_user.user.profile)
 
@@ -88,13 +89,10 @@ def Update_profile(request):
     obj = get_object_or_404(Profile, pk=pk)
 
     if request.method == "POST":
-        form = UpdateForm(request.POST, instance=obj)
+        form = UpdateForm(request.POST, request.FILES, instance=obj)
+
         if form.is_valid():
-            obj.about = form.cleaned_data['about']
-            obj.name = form.cleaned_data['name']
-            obj.sex = form.cleaned_data['sex']
-            obj.birth_date = form.cleaned_data['birth_date']
-            obj.save()
+            profile = form.save()
             messages.info(request,'저장되었습니다.')
         else:
             messages.error(request,'저장중 문제가 발생하였습니다.')
@@ -104,7 +102,7 @@ def Update_profile(request):
     else:
         form = UpdateForm(instance=obj)
 
-    return render(request, 'registration/update_profile.html',{'form':form})
+    return render(request, 'registration/update_profile.html',{'form':form,'profile':obj})
 
 
 def Update_passwd(request):

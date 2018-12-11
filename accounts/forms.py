@@ -16,19 +16,28 @@ class SignupForm(UserCreationForm):
 
     name = forms.CharField(max_length=50)
     about = forms.CharField(widget=forms.Textarea())
+    profil_img = forms.ImageField(label='프로필 사진', required=False)
     sex = forms.ChoiceField(choices = sex_type)
-    birth_date = forms.DateField(help_text='Required. Format: YYYY-MM-DD')
+    birth_date = forms.DateField(widget=forms.DateField(attrs={'class':'datepicker'}))
 
     class Meta:
         model = User
-        fields = ['username', 'password1', 'password2', 'name', 'about', 'sex', 'birth_date']
+
+        fields = ['username', 'password1', 'password2', 'name', 'profil_img', 'about', 'sex', 'birth_date']
+
+    def clean_profil_img(self):
+        profil_img = self.cleaned_data.get('profil_img')
+        if not profil_img:
+            profil_img = None
+        return profil_img
 
     def save(self, commit=True):
-        print('asdfasdf')
+        print(self.cleaned_data)
         user = super(SignupForm, self).save(commit=False)
         user.save()
 
         user.profile.about = self.cleaned_data['about']
+        user.profile.profil_img = self.cleaned_data['profil_img']
         user.profile.birth_date = self.cleaned_data['birth_date']
         user.profile.sex = self.cleaned_data['sex']
         user.profile.name = self.cleaned_data['name']
@@ -45,7 +54,7 @@ class UpdateForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['about','name','sex','birth_date']
+        fields = ['about','name','sex','profil_img','birth_date']
 
     def __init__(self, *args, **kwargs):
        form = super(forms.ModelForm, self).__init__(*args,**kwargs)

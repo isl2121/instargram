@@ -8,7 +8,9 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from .models import App, Comment, Tag
 from .forms import CommentForm
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import json
+
 
 # Create your views here.
 def main(request):
@@ -20,18 +22,46 @@ def main(request):
 
     return render(request, 'app/index.html')
 
+class SafePaginator(Paginator):
+    def validate_number(self, number):
+        try:
+            return super(SafePaginator, self).validate_number(number)
+        except EmptyPage:
+            if number > 1:
+                return self.num_pages
+            else:
+                raise
+
+
 class MainLv(ListView):
     model = App
     context_object_name = 'app_list'
+    paginator_class = SafePaginator
+    paginate_by = 5
+
 
     def get_queryset(self):
-        queryset = App.objects.all().prefetch_related('comment_set', 'tag_setting', 'user__profile__follower_user').select_related('user__profile')
+
+        tag = self.kwargs.pop('tag', '')
+
+        if tag:
+            queryset = App.objects.filter(tag_setting__tag__iexact=tag)\
+                .prefetch_related('comment_set', 'tag_setting','user__profile__follower_user')\
+                .select_related('user__profile').order_by('-created_time')
+        elif self.request.path == reverse_lazy('app:follow_user'):
+            queryset = App.objects.filter(user__profile__in=self.request.user.profile.get_follower) \
+                .prefetch_related('comment_set', 'tag_setting', 'user__profile__follower_user') \
+                .select_related('user__profile').order_by('-created_time')
+        else:
+            queryset = App.objects.all() \
+                .prefetch_related('comment_set', 'tag_setting', 'user__profile__follower_user') \
+                .select_related('user__profile').order_by('-created_time')
+
         return queryset
 
-    def get_context_data(self):
-        context = super().get_context_data()
 
-        return context
+
+
 
 class MakeApp(CreateView):
     model = App
@@ -41,7 +71,6 @@ class MakeApp(CreateView):
 
     def form_valid(self, form):
         object = form.save(commit=False)
-        self.request.POST.get('content')
         object.user = self.request.user
         object.save()
 
@@ -89,11 +118,6 @@ def comment_new(request):
         return_data['msg'] = '등록중 오류가발생하였습니다.'
 
     return HttpResponse(json.dumps(return_data), content_type="application/json")
-
-
-def get_tag(request):
-    pass
-
 
 @login_required
 @require_POST
