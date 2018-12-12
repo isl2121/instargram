@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from .forms import LoginForm, SignupForm, UpdateForm
 from django.contrib import messages
 from .models import Profile, Relation
-from app.models import App
+
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.contrib.auth.forms import PasswordChangeForm

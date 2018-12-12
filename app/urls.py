@@ -12,6 +12,7 @@ urlpatterns = [
     path('modify_app/<int:pk>', views.Modifyapp.as_view(), name="modify_app"),
     path('delete_app/<int:pk>', views.Deleteapp.as_view(), name="delete_app"),
     path('app/tags/<str:tag>/', views.MainLv.as_view(), name="get_tag"),
+    path('app/<str:username>/list/', views.MainLv.as_view(), name="user_app_list"),
     path('follow/list', views.MainLv.as_view(), name="follow_user"),
     path('user/<str:username>/list', views.get_list, name="user_list"),
 

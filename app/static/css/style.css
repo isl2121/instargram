@@ -22,7 +22,7 @@
   height: 30px;
   display: inline-block;
   background-size: 350px;
-  background-image: url(/static/images/sprites/abfe22.png);
+  background-image: url(/static/img/sprites/abfe22.png);
   background-position: -149px 0;
 }
 
@@ -32,7 +32,7 @@
   margin-left: 30px;
   display: inline-block;
   background-size: 413px 391px;
-  background-image: url(/static/images/sprites/abfe22.png);
+  background-image: url(/static/img/sprites/abfe22.png);
   background-position: -201px -111px;
 }
 
@@ -42,7 +42,7 @@
   margin-left: 30px;
   display: inline-block;
   background-size: 413px 391px;
-  background-image: url(/static/images/sprites/abfe22.png);
+  background-image: url(/static/img/sprites/abfe22.png);
   background-position: -192px -283px;
 }
 
@@ -52,6 +52,6 @@
   margin-left: 30px;
   display: inline-block;
   background-size: 413px 391px;
-  background-image: url(/static/images/sprites/abfe22.png);
+  background-image: url(/static/img/sprites/abfe22.png);
   background-position: -275px -342px;
 }

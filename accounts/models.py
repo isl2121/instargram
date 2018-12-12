@@ -61,6 +61,7 @@ class Profile(models.Model):
         return len(self.get_following)
 
 
+
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:

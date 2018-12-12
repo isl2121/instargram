@@ -7,18 +7,16 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from .models import App, Comment, Tag
-from .forms import CommentForm
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-import json
+from .forms import CommentForm, AppForm
+from django.core.paginator import Paginator, EmptyPage
 
+import json, os
 
-# Create your views here.
 def main(request):
-    if request.user.is_authenticated:
-        print(request.user.username)
-        print('login')
-    else:
-        print('none')
+    import tempfile
+    from model_mommy import mommy
+    image = tempfile.NamedTemporaryFile(suffix=".jpg").name
+    app = mommy.make('App', _quantity=20, image=image)
 
     return render(request, 'app/index.html')
 
@@ -43,7 +41,7 @@ class MainLv(ListView):
     def get_queryset(self):
 
         tag = self.kwargs.pop('tag', '')
-
+        username = self.kwargs.pop('username', '')
         if tag:
             queryset = App.objects.filter(tag_setting__tag__iexact=tag)\
                 .prefetch_related('comment_set', 'tag_setting','user__profile__follower_user')\
@@ -52,16 +50,17 @@ class MainLv(ListView):
             queryset = App.objects.filter(user__profile__in=self.request.user.profile.get_follower) \
                 .prefetch_related('comment_set', 'tag_setting', 'user__profile__follower_user') \
                 .select_related('user__profile').order_by('-created_time')
+
+        elif username:
+            queryset = App.objects.filter(user__username=username) \
+                .prefetch_related('comment_set', 'tag_setting', 'user__profile__follower_user') \
+                .select_related('user__profile').order_by('-created_time')
         else:
             queryset = App.objects.all() \
                 .prefetch_related('comment_set', 'tag_setting', 'user__profile__follower_user') \
                 .select_related('user__profile').order_by('-created_time')
 
         return queryset
-
-
-
-
 
 class MakeApp(CreateView):
     model = App
@@ -79,19 +78,25 @@ class MakeApp(CreateView):
 
 class Modifyapp(UpdateView):
     model = App
-    fields = ['title', 'image', 'content']
-    template_name = 'app/app_make.html'
+    form_class = AppForm
+    template_name = 'app/app_modify.html'
     success_url = reverse_lazy('app:index')
+    context_object_name = 'app'
 
     def get_object(self, queryset=None):
         pk = self.kwargs['pk']
         user = self.request.user
         return get_object_or_404(App, pk=pk, user=user)
 
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        return super(Modifyapp,self).form_valid(form)
+
 class Deleteapp(DeleteView):
     model = App
     success_url = reverse_lazy('app:index')
     template_name = "app/app_delete.html"
+
     def get_object(self, queryset=None):
         pk = self.kwargs['pk']
         user = self.request.user

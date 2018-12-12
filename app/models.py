@@ -5,15 +5,29 @@ from django.utils import timezone
 from django.conf import settings
 from imagekit.models import ProcessedImageField
 from imagekit.processors import Thumbnail
-import re
+
+import re, os
 
 # Create your models here.
 class App (models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    image = ProcessedImageField(processors=[Thumbnail(600, 600)],
-                                format='JPEG',
-                                options={'quality': 90})
+    '''
+    image = ProcessedImageField(
+        blank='True',
+        null='True',
+        processors=[Thumbnail(600, 600)],
+        format='JPEG',
+        options={'quality': 90}
+    )
+    '''
+    photo = ProcessedImageField(
+        processors=[Thumbnail(600, 600)],
+        format='JPEG',
+        options={'quality': 90},
+        blank='True',
+    )
+
     content = models.CharField(max_length=500)
     likes = models.ManyToManyField(User, related_name="likes", blank=True)
     tag_setting = models.ManyToManyField('Tag', blank=True)
@@ -35,6 +49,13 @@ class App (models.Model):
             self.tag_setting.add(obj)
 
         return self
+
+    def delete(self):
+        try:
+            os.remove(settings.BASE_DIR + self.image.url)
+        except:
+            pass
+        return super(App, self).delete()
 
 
     def __str__(self):
