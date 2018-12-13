@@ -29,7 +29,8 @@ class Profile(models.Model):
         processors=[ResizeToFill(150, 150)],
         format='JPEG',
         options={'quality':60},
-        blank='True'
+        blank='True',
+        null='True'
     )
     name = models.CharField(max_length=50)
     about = models.TextField(max_length=500, blank=True)

@@ -64,7 +64,7 @@ class MainLv(ListView):
 
 class MakeApp(CreateView):
     model = App
-    fields = ['title', 'image', 'content']
+    form_class = AppForm
     template_name = 'app/app_make.html'
     success_url = reverse_lazy('app:index')
 
@@ -73,7 +73,7 @@ class MakeApp(CreateView):
         object.user = self.request.user
         object.save()
 
-        return super().form_valid(form)
+        return super(MakeApp, self).form_valid(form)
 
 
 class Modifyapp(UpdateView):
@@ -90,6 +90,16 @@ class Modifyapp(UpdateView):
 
     def form_valid(self, form):
         post = form.save(commit=False)
+
+
+
+
+        post.photo = form.cleaned_data['photo']
+
+        post.tag_setting.clear()
+
+        post.save()
+
         return super(Modifyapp,self).form_valid(form)
 
 class Deleteapp(DeleteView):
@@ -164,13 +174,9 @@ def like_chage(request):
     return HttpResponse(json.dumps(return_data), content_type="application/json")
 
 def get_list(request, username):
+
     user = get_object_or_404(get_user_model(), username=username)
     user_profile = user.profile
     user_app = user.app_set.all()
 
-    data = {}
-    data['user_info'] = user
-    data['user_profile'] = user_profile
-    data['apps'] = user_app
-
-    return render(request, 'app/user_list.html', data)
+    return render(request, 'app/user_list.html', {'user_profile':user_profile,'apps':user_app})

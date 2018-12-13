@@ -12,22 +12,12 @@ import re, os
 class App (models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    '''
-    image = ProcessedImageField(
-        blank='True',
-        null='True',
-        processors=[Thumbnail(600, 600)],
-        format='JPEG',
-        options={'quality': 90}
-    )
-    '''
     photo = ProcessedImageField(
         processors=[Thumbnail(600, 600)],
         format='JPEG',
         options={'quality': 90},
         blank='True',
     )
-
     content = models.CharField(max_length=500)
     likes = models.ManyToManyField(User, related_name="likes", blank=True)
     tag_setting = models.ManyToManyField('Tag', blank=True)
