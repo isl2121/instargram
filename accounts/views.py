@@ -33,19 +33,22 @@ def login(request):
                     return redirect('app:index')
                 else:
                     messages.warning(request, '아이디 / 패스워드를 확인하여주십시요')
-                    return HttpResponseRedirect('/account/login')
+                    return HttpResponseRedirect('/user/login')
             else:
                 messages.warning('로그인에 문제가 발생하였습니다.')
-                return HttpResponseRedirect('account/login')
+                return HttpResponseRedirect('/user/login')
 
-    form = LoginForm()
-    return render(request,'registration/login.html', {'form':form})
+        form = LoginForm()
+        return render(request,'registration/login.html', {'form':form})
+
+    else:
+        return redirect('app:index')
 
 def logout(request):
     if request.user.is_authenticated:
         auth_logout(request)
         messages.info(request,'로그아웃 되셨습니다.')
-        return HttpResponseRedirect('/')
+        return redirect('app:index')
     else:
         return render(request, 'registration/login.html')
 

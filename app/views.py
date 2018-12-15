@@ -13,11 +13,6 @@ from django.core.paginator import Paginator, EmptyPage
 import json, os
 
 def main(request):
-    import tempfile
-    from model_mommy import mommy
-    image = tempfile.NamedTemporaryFile(suffix=".jpg").name
-    app = mommy.make('App', _quantity=20, image=image)
-
     return render(request, 'app/index.html')
 
 class SafePaginator(Paginator):

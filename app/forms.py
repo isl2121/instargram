@@ -14,7 +14,7 @@ class CommentForm(forms.ModelForm):
 
 class AppForm(forms.ModelForm):
 
-    title = forms.CharField(label='제', )
+    title = forms.CharField(label='제목', )
     photo = forms.ImageField(label='', required=False, widget=forms.FileInput(attrs={'class' : 'photo'}))
     content = forms.CharField(label='', widget=forms.Textarea(attrs={
         'class': 'post-new-content',
