@@ -1,0 +1,96 @@
+{% extends 'layout/base_layout.html' %}
+{% load tag_util %}
+{% load static %}
+
+{% block js %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+    <script src="{% static 'js/infinite.min.js' %}"></script>
+    {% include 'app/scripts/script.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="infinite-container">
+        {% for app in app_list %}
+        <article class="post-wrap infinite-item">
+            <header>
+                <a class="user-title" href="{% url 'app:user_list' username=app.user.username %}">
+                    {% if app.user.profile.profil_img %}
+                        <img class="user-pic" src="{{ app.user.profile.profil_img.url }}" alt="프로필사진">
+                    {% else %}
+                        <img class="user-pic" src="/media/profil_img/default.jpg" alt="프로필사진">
+                    {% endif %}
+                    <span class="post-username"> {{  app.user.username }}</span>
+                </a>
+                <span class="pull-center">
+                    {{ app.title }}
+                </span>
+                <span class="pull-right">
+                {% if user.username in app.user.username and user.username != '' %}
+                    <span class="pull-right">
+                        <a class="post-edit" href="{% url 'app:modify_app' app.pk %}">수정</a>
+                        <a class="post-edit" href="{% url 'app:delete_app' app.pk %}">삭제</a>
+                    </span>
+                {% else %}
+                    {% if user.profile in  app.user.profile.get_follower %}
+                        <input class="follow follow-btn" type="submit" value="팔로우 해제" name="{{ app.user.username }}">
+                    {% else %}
+                        <input class="follow follow-btn" type="submit" value="팔로우" name="{{ app.user.username }}">
+                    {% endif %}
+                {% endif %}
+                </span>
+            </header>
+            {% if app.photo %}
+                <img src="{{ app.photo.url}}" alt="">
+            {% endif %}
+            <div class="post-content">
+                {% with like_user=app.likes.all %}
+                    {% if user in like_user %}
+                        <input type="button" class="like liked" id="content_like_{{ app.pk }}" name="{{ app.pk }}">
+                    {% else %}
+                        <input type="button" class="like to-like" id="content_like_{{ app.pk }}" name="{{ app.pk }}">
+                    {% endif %}
+                {% endwith %}
+                <input type="button" class="commnet-icon" name="{{ app.pk }}">
+                <p class="like-count" id="count-{{ app.pk }}">좋아요 {{ app.like_count }}개</p>
+                {% with likes_all=app.likes.all %}
+                    <p id="like-user-{{ app.pk }}" {% if likes_all|length == 0 %} style="display: none" {% endif %}>
+                        {% for like_user in app.likes.all %}
+                           {{ like_user  }}
+                        {% endfor %}
+                    님이 좋아합니다.
+                    </p>
+                {% endwith %}
+                <span class="post-username">{{  app.user.username }}</span>
+                <span>{{ app|tag_link|safe }}</span>
+
+                {# for tag in app.tag_setting.all #}
+                {# endfor #}
+
+                <div id="comment-list-ajax-post{{ app.pk }}">
+                    {% for reply in app.comment_set.all %}
+                        <div id="comment{{ reply.pk }}">
+                            <span class="comment-username"> {{reply.user }}</span>  {{ reply }}
+                            {% if user == reply.user %}
+                                <input type="button" class="del-comment" value="삭제" name="{{ reply.pk }}">
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="time">
+                    {{ app.created_time }}
+                </div>
+                <div id="add-comment-post{{ app.id }}" class="add-comment-wrap">
+                    <input class="comment-form" id="id_content" maxlength="40" name="content" placeholder="댓글 달기..." size="70px" type="text" required="">
+                    <input type="button" class="add-comment-btn" name="{{ app.id }}" value="게시">
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    <div class="loading" style="display: none;">
+    </div>
+    {% if page_obj.has_next %}
+        <a class="infinite-more-link" href="?page={{ page_obj.next_page_number }}">More</a>
+    {% endif %}
+
+{% endblock %}

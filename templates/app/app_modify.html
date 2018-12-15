@@ -1,0 +1,32 @@
+{% extends 'layout/base_layout.html' %}
+{% load static %}
+{% block content %}
+    <form class="form account-form" action="" method="post" enctype="multipart/form-data">
+        <div class="user-title">
+            <h1 class="form-title">EDIT POST</h1>
+        </div>
+        <div class="preview">
+            <div class="upload">
+                {% if app.photo.url %}
+                    <p><img id="img_id" src="{{ app.photo.url }}" style="width: 300px; height: 300px; object-fit: cover" ></p>
+                {% else %}
+                    <span class="preview-bg"></span>
+                    <p class="preview-title">포스트 이미지 추가</p>
+                    <p><img id="img_id" src="" style="width: 300px; height: 300px; object-fit: cover" ></p>
+                {% endif %}
+            </div>
+        </div>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input class="submit_btn" type="submit" value="저장">
+    </form>
+{% endblock %}
+
+{% block js %}
+    {% include 'app/scripts/photo_script.html' %}
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/upload.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+{% endblock %}

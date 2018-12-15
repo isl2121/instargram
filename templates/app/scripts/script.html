@@ -1,0 +1,146 @@
+<script type="text/javascript">
+
+    $(document).on("click",".add-comment-btn",function(){
+
+        var login_check = {{ user.is_authenticated|yesno:"true,false" }};
+
+        if (!login_check){
+            alert('로그인한 유저만 댓글을 남길수 있습니다.')
+            return false
+        }
+
+        var pk = $(this).attr('name')
+        var reply = $("#add-comment-post"+pk+">input[type=text]").val();
+
+        $.ajax({
+            type:'POST',
+            url: "{% url 'app:comment_new' %}",
+            data: {'csrfmiddlewaretoken': '{{  csrf_token }}', 'pk' : pk, 'reply' : reply},
+            dataType: 'html',
+             success: function(data, textStatus, jqXHR){
+                alert("댓글을 추가하였습니다.");
+                $("#add-comment-post"+pk+">input[type=text]").val("");
+                $("#comment-list-ajax-post"+pk).append(data);
+              },
+              error: function(request, status, error){
+                alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                alert("문제가 발생했습니다.");
+              },
+        })
+    })
+
+    $(document).on("click",".del-comment",function(){
+
+        var pk = $(this).attr('name')
+
+        $.ajax({
+            type:'POST',
+            url: "{% url 'app:comment_del' %}",
+            data: {'csrfmiddlewaretoken': '{{  csrf_token }}', 'pk' : pk},
+            dataType: 'json',
+             success: function(data, textStatus, jqXHR){
+                alert(data['msg'])
+                if (data['result'] == 1){
+                    $("#comment"+pk).remove()
+                }
+
+              },
+              error: function(request, status, error){
+                alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                alert("문제가 발생했습니다.");
+              },
+        })
+    })
+
+    $(document).on("click",".like",function(){
+        var login_check = {{ user.is_authenticated|yesno:"true,false" }};
+
+        if (!login_check){
+            alert('로그인한 유저만 좋아요 할수 있습니다.')
+            return false
+        }
+
+        var pk = $(this).attr('name')
+        var like_user = $("#like-user-"+pk)
+        $.ajax({
+            type:'POST',
+            url: "{% url 'app:like_change' %}",
+            data: {'csrfmiddlewaretoken': '{{  csrf_token }}', 'pk' : pk},
+            dataType: 'json',
+             success: function(data, textStatus, jqXHR){
+                alert(data['msg'])
+                if (data['result'] == 1){
+                    $("#content_like_"+pk).removeClass('to-like').addClass('liked');
+                    like_user.text(data['user'] + like_user.text())
+                    if (like_user.css("display") == 'none'){
+                        like_user.css("display", '');
+                    };
+                } else {
+                    $("#content_like_"+pk).removeClass('liked').addClass('to-like');
+                    like_user.text(like_user.text().replace(data['user'], ''))
+                    if (data['count'] == 0){
+                       like_user.css("display", 'none');
+                    };
+                }
+                $('#count-'+pk).text("좋아요 "+data['count']+"개")
+              },
+              error: function(request, status, error){
+                alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                alert("문제가 발생했습니다.");
+              },
+        })
+    })
+
+    $(document).on("click",".follow-btn",function(){
+
+        var login_check = {{ user.is_authenticated|yesno:"true,false" }};
+
+        if (!login_check){
+            alert('로그인한 유저만 팔로우 할수 있습니다.')
+            return false
+        }
+
+        var user = $(this).attr('name')
+        var btn = $(this)
+        $.ajax({
+            type:'POST',
+            url: "{% url 'accounts:set_follow' %}",
+            data: {'csrfmiddlewaretoken': '{{  csrf_token }}', 'user' : user},
+            dataType: 'json',
+             success: function(data, textStatus, jqXHR){
+                alert(data['msg'])
+                 if (data['result'] == 1){
+                     console.log("1")
+                     btn.val('팔로우 해제')
+                     print($(this).val())
+                 } else {
+                     btn.val('팔로우')
+
+                 }
+
+
+              },
+              error: function(request, status, error){
+                alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                alert("문제가 발생했습니다.");
+              },
+        })
+    });
+
+     $(document).on('click', '.commnet-icon', function(){
+        var pk = $(this).attr('name');
+        $("#add-comment-post"+pk+">input[type=text]").focus();
+      });
+
+   var infinite = new Waypoint.Infinite({
+      element: $('.infinite-container')[0],
+      onBeforePageLoad: function () {
+        $('.loading').show();
+      },
+      onAfterPageLoad: function ($items) {
+        $('.loading').hide();
+      }
+    });
+
+
+</script>

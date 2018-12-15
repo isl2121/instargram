@@ -1,0 +1,17 @@
+{% extends 'layout/base_layout.html'  %}
+{% load static %}
+{% block content %}
+    <div class="form-container">
+        <div class="form">
+            <h1 class="title">Instargram</h1>
+            <br>
+            <h2 style="text-align: center;">회원가입이 완료되었습니다. </h2>
+            <br>
+            <a href="{% url 'accounts:login' %}"><button class="submit_btn"> 로그인하기</button></a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+{% endblock %}

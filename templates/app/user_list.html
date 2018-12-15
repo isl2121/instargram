@@ -1,0 +1,53 @@
+{% extends 'layout/base_layout.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-fluid">
+    <div class="mylist-container">
+        <div class="mylist-header">
+            <div class="mylist-header-pic">
+                {% if user_profile.profil_img %}
+                    <img class="user-pic" src="{{ user_profile.profil_img.url }}" alt="프로필사진">
+                {% else %}
+                    <img class="user-pic" style="width: 150px;height: 150px" src="/media/profil_img/default.jpg" alt="프로필사진">
+                {% endif %}
+            </div>
+            <div class="mylist-header-info">
+                <h1 class="username">{{ user_info }}</h1>
+                {% if user.is_authenticated %}
+                    {% if user.get_username in user_profile.user.username %}
+                        <a class="profile" href="{% url 'accounts:update_profile' %}">프로필 편집</a>
+                        <a class="profile" href="{% url 'accounts:logout' %}">로그아웃</a>
+                    {% else %}
+                        {% if user_profile.user.username in user_profile.get_follower %}
+                            <input class="follow follow-btn" type="submit" value="팔로우 해제" name="{{ user_profile.user.username }}">
+                        {% else %}
+                            <input class="follow follow-btn" type="submit" value="팔로우" name="{{  user_profile.user.username }}">
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                <ul class="info-list">
+                    <li><span class="info-list-title">게시물</span>{{ apps.count }} </li>
+                    <li><span class="info-list-title">팔로워</span>{{ user_profile.get_follower_count }}</li>
+                    <li><span class="info-list-title">팔로우</span>{{ user_profile.get_following_count }}</li>
+                </ul>
+                <p class="about"><span class="nickname">{{ user_profile.name }}</span> {{ user_profile.about }}</p>
+            </div>
+        </div>
+        <div class="mylist-content">
+            <div class="row">
+                {% for app in apps %}
+                    <div class="pic col-md-4"><a href="{% url 'app:user_app_list' user_profile.user.username %}"><img class="pic-src" src="{{ app.photo.url }}" alt="photo"></a></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/mylist.css' %}"/>
+{% endblock %}
+
+{% block js %}
+    {% include 'app/scripts/script.html' %}
+{% endblock %}
