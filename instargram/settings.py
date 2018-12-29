@@ -132,7 +132,3 @@ DATE_INPUT_FORMATS = ['%Y-%m-%d']
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-print("*")
-print(MEDIA_ROOT)
-print('media')
-print(BASE_DIR)
